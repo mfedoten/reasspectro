@@ -54,55 +54,48 @@ function varargout = reasspecgram(varargin)
 %            Otherwise, it is not recommended to use it, because the idea of
 %            reassignment is lost like that.
 %
+% OUTPUT:
+% RS    : A matrix with reassigned spectrogram. Here, rows are frequencies and
+%         columns are time points.
+% S     : A matrix with original (not reassigned) spectrogram. Here, rows are
+%         frequencies and columns are time points.
+% FNEW  : Frequency vector corresponding to rows in reassigned spectrogram
+%         matrix.
+% TNEW  : Time vector corresponding to columns in reassigned spectrogram matrix.
+% FORIG : Frequency vector corresponding to rows in spectrogram matrix.
+% TORIG : Time vector corresponding to columns in spectrogram matrix.
 %
-% This function computes reassigned version of the spectrogram. The
-% algorithm is based on [1], some parts are based on [2], like
-% interpolation part. For more information on the algorithm, reassignment
-% of other time-frequency representations see references below.
-% The idea is to first compute conventional spectrogram, then find optimal
-% time and frequency positions and reassign values in the spectrogram to
-% this new positions.
-% This method allow to obtain spectrogram on finer grid, for that you have
-% to soecify as the last input three additional parameters: new steps / new
-% size in time and frequency, specify previous input, if it is new steps or
-% size and if you want to interpolate new points or leave it as it is.
 %
-% SYNTAX:
-% RS = reasspecgram(x,win,ovlap,nfft,fs): returns reassigned version of
-% spectrogram, calculated from signal x of length N. Here:
-% - win is a window used for computing spectrogram. It can be a vector or
-% scalar. If it is a scalar it defines the length of Hamming window. If no
-% window is provided Hamming(N/10) is used by default.
-% - ovlap is the number of points each sliding window overlaps. If none is
-% specified the defalt value is 50%.
-% - nfft is the number of frequency points used to calculate the discrete
-% Fourier transforms. Default nfft is next power of 2 greater than the
-% length of the window.
-% - fs - sampling rate of the signal. If none is provided default value is
-% chosen to be N, such that tend = 1 s.
+% This function computes reassigned version of the spectrogram. The algorithm is
+% based on [1], some parts are based on [2], like interpolation part. The idea
+% is to first compute conventional spectrogram, then find optimal (in a sense of
+% energy) time and frequency positions and reassigns values in the spectrogram
+% to this new positions.
 %
-% RS = reasspecgram(x,win,ovlap,nfft,fs,'PropertyName',PropertyValue):
-% returns reassigned spectrogram on finer grid and larger size. Here:
-% - sampling is two-element vector. First value for frequency and second is
-% for time. It can either contain new sampling interval or new size of the
-% output matrix, e.g. [df dt] or [Nf Nt]. What is used defined in the next
-% input.
-% - sampling_type defines how to interpret the previous input. Must be
-% string. Possible values are: 'step' then previous input is used as
-% sampling step, or 'size' then previou input gives the output matrix size.
-% - interp_flag: if not-empty interpolation between adjacent points willl
-% be used.
+% You have a choice between reassigning spectrogram either as short-time Fourier
+% transform (STFT) or power spectrum density (STFT normalized by window energy
+% and sampling rate). Controlled by 'pad' property.
 %
-% [RS,fnew,tnew] = reasspecgram(...): returns reassigned spectrogram with
-% new time and frequency vectors;
+% You can pad signal before any processing, it can be done by providing a type
+% of padding in 'pad' property.
 %
-% [RS,S] = reasspecgram(...): returns reassigned and conventional
-% spectrograms;
+% Sometimes, extreme values (outliers) appear on a spectrogram (reassigned and
+% original), for instance, when using too many overlapping points between the
+% segments. You can 'crop' them by providing to a desired value of percentile of
+% the data, above which all the values will be set to the highest values. It
+% works similarly to thresholding. To use this feature specify percentile as
+% 'crop' property.
 %
-% [RS,fnew,tnew,S,forig,torig] = reasspecgram(...): returns reassigned and
-% conventional spectrograms as well as corresponding time and frequency
-% vectors.
-%
+% It is possible to obtain spectrogram on finer grid with this method. For that,
+% you have to specify in the properties three additional parameters: new steps
+% or new dimensions of time and frequency, specify if it is new steps or
+% dimensions. Usage of this feature is not recommended, because even though it
+% is possible to increase number of points in the output matrix the original
+% number of points is not changing. So, you might obtain very sparse matrix. To
+% partially solve it you can use interpolation (set 'interp' parameter), which
+% interpolates additional points with values of its neighbouring points. A use
+% of this feature is also not advised, because it decreases the sharpness of
+% reassigned spectrogram and contradicts the whole idea of the reassignment.
 %
 % (C) Mariia Fedotenkova 2015.
 
