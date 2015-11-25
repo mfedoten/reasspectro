@@ -14,40 +14,62 @@ It is possible to obtain spectrogram on finer grid with this method. For that, y
 
 
 # Syntax
-REASSPECGRAM spectrogram reassignment
- RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
- RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,PROPERTYSTRUCTURE)
-[RS,S] = REASSPECGRAM(...)
-[RS,FNEW,TNEW] = REASSPECGRAM(...)
-[RS,FNEW,TNEW,S,FORIG,TORIG] = REASSPECGRAM(...)
+	 RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
+	 RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,PROPERTYSTRUCTURE)
+	[RS,S] = REASSPECGRAM(...)
+	[RS,FNEW,TNEW] = REASSPECGRAM(...)
+	[RS,FNEW,TNEW,S,FORIG,TORIG] = REASSPECGRAM(...)
 
-|Input  |                   |
+|Inputs |                   |
 |-------|-------------------|
-|SIG    | analysed signal of length N points. |
+|SIG    | analysed signal, length of the signal is N points. |
 |WIN    | smoothing window. If WIN is a vector, the signal SIG is divided into segments of length equal to the length of the window, and each segment is filtered with WIN. If WIN is an integer, then SIG is divided into segments of length equal to the specified integer and filtered with Hamming window. If no window is provided, then Hamming window of length N/10 is used by default. |
-|OVLAP  | number of overlapping points between two adjacent windows. Is used to compensate energy loss at the ends of smoothing windows. Should be specified as an integer smaller than the length of the window. If no OVLAP is given, the default value is used to obtain a 50% overlap. |
-|NFFT   | number of Fourier transform points. If no input is provided, the default value is chosen as next power of 2 greater then the length of the window. |
+|OVLAP  | number of overlapping points between two adjacent windows. Is used to compensate energy loss at the ends of smoothing windows. Should be specified as an integer smaller than the length of the window. If no OVLAP is given, the default value is used to obtain overlap of 50%. |
+|NFFT   | number of Fourier transform points. If no input is provided, the default value is chosen to be equal to next power of 2 greater then the length of the window. |
 |FS     | sampling frequency in Hz.|
 
-|Output |                   |
-|-------|-------------------|
-| RS    | A matrix with reassigned spectrogram. Here, rows are frequencies and columns are time points.|
-| S     | A matrix with original (not reassigned) spectrogram. Here, rows are frequencies and columns are time points. |
-| FNEW  | Frequency vector corresponding to rows in reassigned spectrogram matrix. |
-| TNEW  | Time vector corresponding to columns in reassigned spectrogram matrix. |
-| FORIG | Frequency vector corresponding to rows in spectrogram matrix. |
-| TORIG | Time vector corresponding to columns in spectrogram matrix. |
+|Outputs |                   |
+|--------|-------------------|
+| RS     | A matrix with reassigned spectrogram. Here, rows are frequencies and columns are time points.|
+| S      | A matrix with original (not reassigned) spectrogram. Here, rows are frequencies and columns are time points. |
+| FNEW   | Frequency vector corresponding to rows in reassigned spectrogram matrix. |
+| TNEW   | Time vector corresponding to columns in reassigned spectrogram matrix. |
+| FORIG  | Frequency vector corresponding to rows in spectrogram matrix. |
+| TORIG  | Time vector corresponding to columns in spectrogram matrix. |
 
-|Property  | Possible values      |                   |
-|----------|----------------------|-------------------|
-| 'psd'    | true, **false** | If true, power spectral density (PSD) is reassigned. If not, squared absolute value of short-time Fourier transform is used. |
-| 'pad'    | **'zeros'** , 'const' , 'periodic' , symmetric' | If specified before processing a signal will be padded according to the chosen method. Padding can be done with zeros ('zeros'); with constant  equal to the first and last values of the signal ('const'); 'periodic' continues signal in both directions periodically; 'symmetric' reflects signal symmetrically on both sides. If padding is chosen it is added on both slides, the length of the padding is half of the window length. |
-| 'crop'   | true, **false** | Sometimes there might be extreme values in the final time-frequency representation. You can "crop" such values, by specifying percentile, above which the values should not be considered (analogy with outliers), value of 99.5-99.9% is reasonable. |
-| 'size'   | 2-element vector| You can change the size of the output TFR matrix.  Specify a new size as two-element vector: number of rows (frequency) and number of columns (time). Not recommended, because the number of elements in the TFR matrix is fixed. |
-| 'step'   | 2-element vector| Similar to 'size' parameter, but instead of specifying new size you provide new frequency and time sampling. |
-| 'interp' | true, **false** | Interpolate neighbouring points. Can be useful when using new size/sampling, because it increases the number of points.  Otherwise, it is not recommended to use it, because the idea of reassignment is lost like that. |
+|Property  | Possible values      | Description |
+|----------|----------------------|-------------|
+| 'psd'    | boolean | If true, power spectral density (PSD) is reassigned. If not, squared absolute value of short-time Fourier transform is used. |
+| 'pad'    | 'zeros' , 'const' , 'periodic' , symmetric' | If specified before processing a signal will be padded according to the chosen method. Padding can be done with zeros ('zeros'); with constant  equal to the first and last values of the signal ('const'); 'periodic' padding continues signal in both directions periodically; 'symmetric' reflects signal symmetrically on both sides. If padding is chosen it is added on both slides, the length of the padding is half of the window length. |
+| 'crop'   | boolean | Sometimes there might be extreme values in the final TFR matrix. You can "crop" such values, by specifying percentile, above which the values should not be considered (by analogy with outliers); value of 99.5-99.9% is reasonable. |
+| 'size'   | 2-element vector| You can change the size of the output TFR matrix.  Specify a new size as two-element vector: number of rows (frequency) and number of columns (time). Not recommended, because the number of elements in the original TFR matrix is fixed. |
+| 'step'   | 2-element vector| Similar to 'size' parameter, but instead of specifying new size you provide new frequency and time sampling steps. |
+| 'interp' | boolean | Interpolate neighbouring points. Can be useful when using new size/sampling, because it increases the number of points.  Otherwise, it is not recommended to use it, because the idea of reassignment is lost when interpolating. |
+
 By default all properties are unset. Property can be passed as name-value pair
 or as a structure. If field requires logical true/false input, every non-empty,
 finite and not 'NaN' input is treated as logical true, e.g. true, 'yes', 1
 etc. will be validated as logical true.
 
+## Example
+```matlab
+% create chirp signal
+N  = 1000;
+fs = 100;
+t  = (0:N-1)/fs;
+x  = chirp(t,0,t(end),fs/2,'quadratic')';
+x  = x + 0.5*randn(size(x));
+figure; plot(t,x);
+% get cwt from min frequency to fs/2 with 1Hz step and display results
+[WT,f,t,coi,scales] = wt(x,fs,'morl','fstep',1,'plot',1);
+% or you could specify options in the form of structure
+opt = struct('fstep',1,'plot',1);
+[WT,f,t,coi,scales] = wt(x,fs,'morl',opt);
+```
+![Example signal](/example_sig.png)
+![Example CWT](/example.png)
+
+
+## References
+1. Jordan, D., Miksad, R. W. & Powers, E. J. Implementation of the continuous wavelet transform for digital time series analysis. Review of Scientific Instruments 68, 1484 (1997).
+2. Torrence, C. & Compo, G. P. A Practical Guide to Wavelet Analysis.  Bulletin of the American Meteorological Society 79, 61-78 (1998).
