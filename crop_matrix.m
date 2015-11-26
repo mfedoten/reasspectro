@@ -1,4 +1,4 @@
-function X = reassignment_crop_matrix(X,percent)
+function X = crop_matrix(X,percent)
 
 lim = prctile(X(:),percent);
 max_val = max(X(X(:)<lim));

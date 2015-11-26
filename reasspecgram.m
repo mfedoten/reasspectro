@@ -96,8 +96,17 @@ function varargout = reasspecgram(varargin)
 % interpolates additional points with values of its neighbouring points. A use
 % of this feature is also not advised, because it decreases the sharpness of
 % reassigned spectrogram and contradicts the whole idea of the reassignment.
+% 
+% References
+% 1. Auger, F. et al. Time-Frequency Reassignment and Synchrosqueezing: An
+% Overview. IEEE Signal Processing Magazine 30, 32?41 (2013). 
+% 2.Fulop, S. A. & Fitz, K. Algorithms for computing the time-corrected
+% instantaneous frequency (reassigned) spectrogram, with applications. The
+% Journal of the Acoustical Society of America 119, 360 (2006).
 %
-% (C) Mariia Fedotenkova 2015.
+% Copyright Mariia Fedotenkova, 2015, INRIA Nancy.
+% Licensed for use under GNU General Public License, Version 2.  See LICENSE for
+% details.
 
 
 % check inputs and outputs
@@ -193,8 +202,8 @@ end
 % crop reassigned and conventional sectrograms to have only values below
 % specified percentile
 if opts.crop
-    RS = reassignment_crop_matrix(RS,opts.crop);
-    S  = reassignment_crop_matrix(S,opts.crop);
+    RS = crop_matrix(RS,opts.crop);
+    S  = crop_matrix(S,opts.crop);
 end
 
 % add half of the window to time vector if no padding was used

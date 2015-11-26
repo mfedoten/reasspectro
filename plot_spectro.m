@@ -15,6 +15,7 @@ function plot_spectro(t,f,S,varargin)
 % font  : size of the ticks font;
 % hax   : handle to axes, where you want to plot it, otherwise creates new
 %         figure
+% colmap: colormap
 
 % get options into structure
 opts = struct(varargin{:});
@@ -24,16 +25,15 @@ fs_default = get(0,'DefaultAxesFontSize');
 % set font sizes
 if isfield(opts,'font')
     % smallest font is for axes
-    if nargin > 6 && font_size
-        set(0,'DefaultAxesFontSize',font_size);
-    end
-    fs_ticks  = get(0,'DefaultAxesFontSize');
-    fs_labels = fs_ticks + 4;
+    set(0,'DefaultAxesFontSize',font_size);
 end
+fs_ticks  = get(0,'DefaultAxesFontSize');
+fs_labels = fs_ticks + 4;
+
 
 % use provided figure, if asked
 if isfield(opts,'hax')
-    ha = opts.hfig;
+    ha = opts.hax;
 else
     figure('Units','Centimeters');
     fpos = get(gcf,'Position');
@@ -42,36 +42,42 @@ else
     
     ha = axes('Units','Centimeters','Position',[0.1*fpos(3:4) 0.8*fpos(3:4)]);
 end
-set(ha,'Render','painters');
+set(gcf,'Render','painters');
 
 % chose plotting method
 if ~isfield(opts,'type') || ~any(strcmpi(opts.type,{'image','contour','pcolor'}))
     opts.type = 'image';
 end
 
-switch type
+axes(ha);
+switch opts.type
     case 'image'
-        
-% plot full TFR
-if nargin > 5 && flim 
-    imagesc(t,f(f<=flim),S(f<=flim,:));
-else
-    imagesc(t,f,S);
+        imagesc(t,f,S);
+        axis xy;
+    case 'contour'
+        if isfield(opts,'ncont')
+            contourf(t,f,S,opts.ncont,'EdgeColor','None');
+        else
+            contourf(t,f,S,opts.ncont,'EdgeColor','None');
+        end
+    case 'pcolor'
+        pcolor(t,f,S); 
+        shading flat;
 end
 
-% normal y-direction
-axis xy;
-axis square;
-% decent tick lengths
-set(gca,'ticklength',.5*get(gca,'ticklength'));
+% plot until max freq. if specified
+if isfield(opts,'flim')
+    ylim([f(1) opts.flim]);
+end
+
+% set desired colormap
+if isfield(opts,'colmap')
+    colormap(opts.colmap);
+end
 
 % anotate the plots
 ylabel('Frequency', 'FontSize', fs_labels);
 xlabel('Time', 'FontSize', fs_labels);
-if nargin > 7 && ischar(titleString)
-    fs_title  = fs_labels + 2;
-    title(titleString, 'FontSize', fs_title);
-end
 
 % Colorbar
 pos = get(gca,'Position');
@@ -89,11 +95,13 @@ end
 set(gca,'Position',pos);
 
 % cone of influence (plot only if exists)
-fs = 1/(tt(2)-tt(1));
-% color to plot COI
-ccoi = 'w';
-if Nw/2/fs > t(1)
-    disp_coi(gca,tt,Nw,fs,fs/2,ccoi,min(S(:)));
+if isfield(opts,'Nw') && isfield(opts,'tReal')
+    fs = 1/(opts.tReal(2)-opts.tReal(1));
+    % color to plot COI
+    ccoi = 'w';
+    if opts.Nw/2/fs > t(1)
+        disp_coi(gca,opts.tReal,opts.Nw,fs,fs/2,ccoi,min(S(:)));
+    end
 end
 
 % set default font size back

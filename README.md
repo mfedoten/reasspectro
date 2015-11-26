@@ -52,24 +52,40 @@ finite and not 'NaN' input is treated as logical true, e.g. true, 'yes', 1
 etc. will be validated as logical true.
 
 ## Example
+Full script with examples on different functionality is in the 'examples' folder.
+
 ```matlab
-% create chirp signal
-N  = 1000;
-fs = 100;
-t  = (0:N-1)/fs;
-x  = chirp(t,0,t(end),fs/2,'quadratic')';
-x  = x + 0.5*randn(size(x));
-figure; plot(t,x);
-% get cwt from min frequency to fs/2 with 1Hz step and display results
-[WT,f,t,coi,scales] = wt(x,fs,'morl','fstep',1,'plot',1);
-% or you could specify options in the form of structure
-opt = struct('fstep',1,'plot',1);
-[WT,f,t,coi,scales] = wt(x,fs,'morl',opt);
+N  = 1024;          % number of points
+T  = 1;             % total time
+fs = N/T;           % sampling rate
+dt = 1/fs;          % sampling step
+t  = 0:dt:T-dt;     % time vector
+x  = chirp(t,0.1*fs,t(end),0.4*fs,'quadratic')';
+x  = x + 0.2*randn(size(x));
+
+% parameters of spectrogram
+df    = 10;                    % frequency resolution
+Nw    = floor(fs/df);           % window length
+win   = hamming(Nw);            % window function
+ovlap = floor(.9*Nw);           % number of overlapping points
+nfft  = 2^nextpow2(Nw);         % number of FT points
+
+%% defaults
+[RS,f_reas,t_reas,S,f_sp,t_sp] = reasspecgram(x,win,ovlap,nfft,fs);
+
+% plot
+figure;
+h1 = subplot(121);
+h2 = subplot(122);
+
+plot_spectro(t_sp,f_sp,S,'tReal',t,'Nw',Nw,'hax',h1);
+title('Spectrogram','FontSize',16);
+plot_spectro(t_reas,f_reas,RS,'tReal',t,'Nw',Nw,'hax',h2);
+title('Reassigned spectrogram','FontSize',16);
 ```
-![Example signal](/example_sig.png)
-![Example CWT](/example.png)
+![Example TFR](/example_defaults.png)
 
 
 ## References
-1. Jordan, D., Miksad, R. W. & Powers, E. J. Implementation of the continuous wavelet transform for digital time series analysis. Review of Scientific Instruments 68, 1484 (1997).
-2. Torrence, C. & Compo, G. P. A Practical Guide to Wavelet Analysis.  Bulletin of the American Meteorological Society 79, 61-78 (1998).
+1. Auger, F. et al. Time-Frequency Reassignment and Synchrosqueezing: An Overview. IEEE Signal Processing Magazine 30, 32–41 (2013).
+2.Fulop, S. A. & Fitz, K. Algorithms for computing the time-corrected instantaneous frequency (reassigned) spectrogram, with applications. The Journal of the Acoustical Society of America 119, 360 (2006). 
