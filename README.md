@@ -14,11 +14,11 @@ It is possible to obtain spectrogram on finer grid with this method. For that, y
 
 
 # Syntax
-	 RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
-	 RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,PROPERTYSTRUCTURE)
-	[RS,S] = REASSPECGRAM(...)
-	[RS,FNEW,TNEW] = REASSPECGRAM(...)
-	[RS,FNEW,TNEW,S,FORIG,TORIG] = REASSPECGRAM(...)
+     RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
+     RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,PROPERTYSTRUCTURE)
+    [RS,S] = REASSPECGRAM(...)
+    [RS,FNEW,TNEW] = REASSPECGRAM(...)
+    [RS,FNEW,TNEW,S,FORIG,TORIG] = REASSPECGRAM(...)
 
 |Inputs |                   |
 |-------|-------------------|
@@ -88,4 +88,4 @@ title('Reassigned spectrogram','FontSize',16);
 
 ## References
 1. Auger, F. et al. Time-Frequency Reassignment and Synchrosqueezing: An Overview. IEEE Signal Processing Magazine 30, 32–41 (2013).
-2.Fulop, S. A. & Fitz, K. Algorithms for computing the time-corrected instantaneous frequency (reassigned) spectrogram, with applications. The Journal of the Acoustical Society of America 119, 360 (2006). 
+2.Fulop, S. A. & Fitz, K. Algorithms for computing the time-corrected instantaneous frequency (reassigned) spectrogram, with applications. The Journal of the Acoustical Society of America 119, 360 (2006).
