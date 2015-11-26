@@ -83,7 +83,7 @@ title('Spectrogram','FontSize',16);
 plot_spectro(t_reas,f_reas,RS,'tReal',t,'Nw',Nw,'hax',h2);
 title('Reassigned spectrogram','FontSize',16);
 ```
-![Example TFR](/example_defaults.png)
+![Example TFR](./examples/example_defaults.png)
 
 
 ## References
