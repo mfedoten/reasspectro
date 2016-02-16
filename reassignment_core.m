@@ -5,7 +5,7 @@ function [RS,fnew,tnew,S,forig,torig] = reassignment_core(sig,win,ovlap,nfft,fs,
 % - does the reassignment;
 % - computes new vectors.
 %
-% Inputs and outputs are the same as in reasspecgram.m (see for more info).
+% Inputs and outputs are described in reasspecgram.m (see for more info).
 %
 % (C) Mariia Fedotenkoava 2016.
 

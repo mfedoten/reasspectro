@@ -1,5 +1,5 @@
 function opts = reassignment_check_opts(flag,opts)
-% Helper function to check options for reassignment
+% Helper function to check options for reassignment method
 
 % first check that all the fields are valid
 val_flds = {'new_sampling','step','size','interp','psd','crop','pad','mean'};

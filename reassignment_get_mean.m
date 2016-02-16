@@ -5,9 +5,10 @@ function tfrAvg = reassignment_get_mean(tfr,method)
 %
 % INPUT:
 % tfr    : TFRs to be averaged. Should have size of Nf x Nt x K, where Nf is the
-%          number of frequency bins in the TFR, Nt is number of time points in the
-%          TFR and K is the number of tapers. Averaging along K.
-% method : Averaging method. Possible values are 'mean','geom','min', 'median'.
+%          number of frequency bins in the TFR, Nt is number of time points in
+%          the TFR and K is the number of tapers. Averaging along K.
+% method : Averaging method. The possible values are:
+%          'mean','geom','min','median'.
 % 
 % OUTPUT:
 % tfrAvg : final (averaged) TFR.
