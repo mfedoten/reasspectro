@@ -68,17 +68,6 @@ RStapers = zeros(frow,tcol,K);
 for k = 1:K
     % tapers are nothing else but window functions
     win = tapers(:,1);
-    
-    % construct additional windows for reassignment
-    [Twin,Dwin] = reassignment_get_windows(win,fs);
-    
-    % compute three STFTs
-    Sw  = reassignment_get_stft(sig,win,ovlap,nfft);
-    Stw = reassignment_get_stft(sig,Twin,ovlap,nfft);
-    Sdw = reassignment_get_stft(sig,Dwin,ovlap,nfft);
-    % assert(all([frow,tcol]==size(Sw)))
-    
-    
 end
 % get spectrograms
 
