@@ -104,6 +104,8 @@ function varargout = reasspecgram(varargin)
 % instantaneous frequency (reassigned) spectrogram, with applications. The
 % Journal of the Acoustical Society of America 119, 360 (2006).
 %
+% See also: reasmultitapers.m
+%
 % Copyright Mariia Fedotenkova, 2016, INRIA Nancy.
 % Licensed for use under GNU General Public License, Version 2.  See LICENSE for
 % details.
@@ -187,7 +189,7 @@ if nargin < 5 || isempty(varargin{5})
     opts = struct;
 elseif nargin >= 5
     fs = varargin{5};
-    if fs < 0 || ~isscalar(fs)
+    if ~isscalar(fs) || fs < 0
         error('Sampling rate should be positive scalar');
     end
     % the rest (if any) are options for new spacing, turn it into structure

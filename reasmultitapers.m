@@ -33,22 +33,22 @@ function varargout = reasmultitapers(varargin)
 narginchk(1,15);
 nargoutchk(1,6);
 % distribute inputs
-[sig,Nw,taps,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
+[sig,Nseq,taps,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
 opts = reassignment_check_opts(opts);
 
 % generate taper or check provided
-tapers = reassignment_get_tapers(taps,Nw);
+tapers = reassignment_get_tapers(taps,Nseq);
 % number of tapers
 K = size(tapers,2);
 
 % pad signal with half of the window on both sides in order to avoid edge
 % effects and to have time starting from zero, not half of the window
 if opts.pad
-    sig = reassignment_pad_signal(sig,Nw,opts.pad);
+    sig = reassignment_pad_signal(sig,Nseq,opts.pad);
 end
 
 % get the number of rows and columns in the output matrix
-tcol = fix((length(sig)-ovlap)/(Nw-ovlap));
+tcol = fix((length(sig)-ovlap)/(Nseq-ovlap));
 if ~isreal(sig)     % analytical signal
     frow = nfft;
 else                % real signal
@@ -67,38 +67,57 @@ RStapers = zeros(frow,tcol,K);
 %(unless one day I come up with something better)
 for k = 1:K
     % tapers are nothing else but window functions
-    win = tapers(:,1);
+    win = tapers(:,k);
+    
+    % do the reassignment
+    [RStapers(:,:,k),fnew,tnew,Stapers(:,:,k),forig,torig] = ...
+        reassignment_core(sig,win,ovlap,nfft,fs,opts);
 end
-% get spectrograms
-
-% reassign spectrograms
 
 % average spectrograms
+S  = mean(Stapers,3);
+RS = mean(RStapers,3);
 
-% return outputs
 
+% ------------------------ distribute the outputs -------------------------
+switch nargout
+    case 1
+        varargout = {RS};
+    case 2
+        varargout = {RS,S};
+    case 3
+        varargout = {RS,fnew,tnew};
+    case 6
+        varargout = {RS,fnew,tnew,S,forig,torig};
+    otherwise
+        error('Wrong number of outputs. See help for more information.')
+end
 
 end
 
 
 %--------------------------------------------------------------------------
-function [sig,Nw,tapers,ovlap,nfft,fs,opts]=parse_inpts(varargin)
+function [sig,Nseq,tapers,ovlap,nfft,fs,opts]=parse_inpts(varargin)
 sig = varargin{1};
 N  = length(sig);
 % if length of tapers is not provided, set Nw=N/10
 if nargin < 2 || isempty(varargin{2})
-    Nw = floor(N/10);
+    Nseq = floor(N/10);
+else
+    Nseq = varargin{2};
 end
 % if no tapers provided, set [NW K] = [3 5]
 if nargin < 3 || isempty(varargin{3})
-    tapers = [3 5]; 
+    tapers = [3 5];
+else
+    tapers = varargin{3};
 end
 % if no overlap provided, use 50% by default
 if nargin < 4 || isempty(varargin{4})
-    ovlap = floor(0.5*Nw);
+    ovlap = floor(0.5*Nseq);
 else
     ovlap = varargin{4};
-    if ovlap >= Nw
+    if ovlap >= Nseq
         error('Overlap should be less or equal than window length');
     end
 
@@ -107,7 +126,7 @@ end
 % window. If Nfft greater than the length of the signal, use the latter
 % instead.
 if nargin < 5 || isempty(varargin{5})
-    nfft = 2^nextpow2(Nw);
+    nfft = 2^nextpow2(Nseq);
 else
     nfft = varargin{5};
     if nfft > 2^nextpow2(N)
@@ -122,13 +141,13 @@ if nargin < 6 || isempty(varargin{6})
     opts = struct;
 elseif nargin >= 6
     fs = varargin{6};
-    if fs < 0 || ~isscalar(fs)
+    if ~isscalar(fs) || fs < 0
         error('Sampling rate should be positive scalar');
     end
     % the rest (if any) are options for new spacing, turn it into structure
     if nargin > 6
         try
-            opts = struct(varargin{6:end});
+            opts = struct(varargin{7:end});
         catch
             error('Specify properties as one or more name-value pairs.')
         end
