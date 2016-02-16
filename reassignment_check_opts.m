@@ -1,8 +1,8 @@
-function opts = reassignment_check_opts(opts)
+function opts = reassignment_check_opts(flag,opts)
 % Helper function to check options for reassignment
 
 % first check that all the fields are valid
-val_flds = {'new_sampling','step','size','interp','psd','crop','pad'};
+val_flds = {'new_sampling','step','size','interp','psd','crop','pad','mean'};
 opt_flds = fieldnames(opts);
 not_valid = opt_flds(~ismember(opt_flds,val_flds));
 if ~isempty(not_valid)
@@ -92,3 +92,18 @@ if isfield(opts,'pad')
 else
     opts.pad = false;
 end
+
+% check averaging method for multitaper reassignment.
+if strcmpi(flag,'tapers')
+    if ~isfield(opts,'mean') || isempty(opts.mean)
+        opts.mean = 'mean';
+    elseif ~any(strcmpi(opts.mean,{'mean','geom','min', 'median'}))
+        error('Not a valid averaging method: %s',opts.mean);
+    end
+elseif strcmpi(flag,'spec')
+    if isfield(opts,'mean') && ~isempty(opt.mean)
+        warning(['Averaging method is not applicable with spectrogram ',...
+            'reassignment. Ignoring.']);
+    end
+end
+    

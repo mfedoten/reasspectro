@@ -116,7 +116,7 @@ narginchk(1,15);
 nargoutchk(1,6);
 % distribute inputs
 [sig,win,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
-opts = reassignment_check_opts(opts);
+opts = reassignment_check_opts('spec',opts);
 
 % pad signal with half of the window on both sides in order to avoid edge
 % effects and to have time starting from zero, not half of the window

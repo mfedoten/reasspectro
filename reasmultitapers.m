@@ -34,7 +34,7 @@ narginchk(1,15);
 nargoutchk(1,6);
 % distribute inputs
 [sig,Nseq,taps,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
-opts = reassignment_check_opts(opts);
+opts = reassignment_check_opts('tapers',opts);
 
 % generate taper or check provided
 tapers = reassignment_get_tapers(taps,Nseq);
@@ -75,8 +75,8 @@ for k = 1:K
 end
 
 % average spectrograms
-S  = reassignment_get_mean(Stapers,opt.mean);
-RS = reassignment_get_mean(Stapers,opt.mean);
+S  = reassignment_get_mean(Stapers,opts.mean);
+RS = reassignment_get_mean(RStapers,opts.mean);
 
 
 % ------------------------ distribute the outputs -------------------------
