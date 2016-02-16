@@ -75,8 +75,8 @@ for k = 1:K
 end
 
 % average spectrograms
-S  = mean(Stapers,3);
-RS = mean(RStapers,3);
+S  = reassignment_get_mean(Stapers,opt.mean);
+RS = reassignment_get_mean(Stapers,opt.mean);
 
 
 % ------------------------ distribute the outputs -------------------------

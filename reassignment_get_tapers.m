@@ -1,5 +1,18 @@
 function tapers=reassignment_get_tapers(taps,N)
 % function to generate tapers from given parameters or check provided tapers.
+%
+% INPUT:
+% taps : (1) two element vector [NW K], where NW is time half-bandwidth and K is
+%        number of tapers;
+%        OR
+%        (2) matrix with Slepian sequences, where nr. of rows is number of time
+%        points and nr. of columns is number of tapers.
+% N    : length of each taper in samples.
+% 
+% OUTPUT:
+% tapers : final Slepian sequences.
+%
+% (C) Mariia Fedotenkoava 2016.
 
 % get size
 sz = size(taps);
