@@ -116,18 +116,17 @@ nargoutchk(1,6);
 [sig,win,Nw,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
 opts = reassignment_check_opts(opts);
 
+% pad signal with half of the window on both sides in order to avoid edge
+% effects and to have time starting from zero, not half of the window
+if opts.pad
+    sig = reassignment_pad_signal(sig,Nw,opts.pad);
+end
 
 % make sure window is a column vector
 win = win(:);
 % construct additional windows for reassignment
 [Twin,Dwin] = reassignment_get_windows(win,fs);
 
-
-% pad signal with half of the window on both sides in order to avoid edge
-% effects and to have time starting from zero, not half of the window
-if opts.pad
-    sig = reassignment_pad_signal(sig,Nw,opts.pad);
-end
 
 
 % compute three STFTs

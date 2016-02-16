@@ -37,8 +37,49 @@ nargoutchk(1,6);
 opts = reassignment_check_opts(opts);
 
 % generate taper or check provided
-tapers = reassignment_get_tapers(taps,length(data));
+tapers = reassignment_get_tapers(taps,Nw);
+% number of tapers
+K = size(tapers,2);
 
+% pad signal with half of the window on both sides in order to avoid edge
+% effects and to have time starting from zero, not half of the window
+if opts.pad
+    sig = reassignment_pad_signal(sig,Nw,opts.pad);
+end
+
+% get the number of rows and columns in the output matrix
+tcol = fix((length(sig)-ovlap)/(Nw-ovlap));
+if ~isreal(sig)     % analytical signal
+    frow = nfft;
+else                % real signal
+    if rem(nfft,2)
+        frow = (nfft+1)/2;
+    else
+        frow = nfft/2+1;
+    end
+end
+
+% initialize empty matrices for spectrogram and reassigned spectrogram
+Stapers  = zeros(frow,tcol,K);
+RStapers = zeros(frow,tcol,K);
+
+% now we'll have to loop over all tapers
+%(unless one day I come up with something better)
+for k = 1:K
+    % tapers are nothing else but window functions
+    win = tapers(:,1);
+    
+    % construct additional windows for reassignment
+    [Twin,Dwin] = reassignment_get_windows(win,fs);
+    
+    % compute three STFTs
+    Sw  = reassignment_get_stft(sig,win,ovlap,nfft);
+    Stw = reassignment_get_stft(sig,Twin,ovlap,nfft);
+    Sdw = reassignment_get_stft(sig,Dwin,ovlap,nfft);
+    % assert(all([frow,tcol]==size(Sw)))
+    
+    
+end
 % get spectrograms
 
 % reassign spectrograms
