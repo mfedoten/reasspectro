@@ -1,6 +1,6 @@
 function tfrAvg = reassignment_get_mean(tfr,method)
-% function to average multiple TFRs obtained with different tapers into a single
-% TFR, average is done according to a provided method. For more information on
+% Function to average multiple TFRs obtained with different tapers into a single
+% TFR, averaging is done according to a provided method. For more information on
 % averaging methods see [1].
 %
 % INPUT:

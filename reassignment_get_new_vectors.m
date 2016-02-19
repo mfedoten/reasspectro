@@ -35,7 +35,7 @@ function [varargout] = reassignment_get_new_vectors(fhat,that,forig,torig,S,opt)
 %         fnew,tnew  - new times and frequencies (optional);
 %
 % 
-% (C) Mariia Fedotenkova 2015.
+% (C) Mariia Fedotenkova 2016.
 
 if ~opt.new_sampling
     % construct new time and frequency vectors

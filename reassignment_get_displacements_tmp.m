@@ -13,7 +13,7 @@ function [fhat,that] = reassignment_get_displacements_tmp(Sw,Stw,Sdw,torig,forig
 %         That - the same as Fhat, but for time;
 %
 %
-% (C) Mariia Fedotenkova 2015.
+% (C) Mariia Fedotenkova 2016.
 
 
 % find where STFT is non-zero

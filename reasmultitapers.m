@@ -78,8 +78,8 @@ function varargout = reasmultitapers(varargin)
 %
 %
 % This function computes reassigned version of the multitaper spectrogram. The
-% algorithm is based on [3], some parts are based on [2], like interpolation
-% part. 
+% algorithm is based on [3], some parts, like interpolation part are based on
+% [2].
 % 
 % The main idea is the same as in reassigned spectrogram (see help reasspecgram
 % for more details), the only difference is that we compute it for each taper

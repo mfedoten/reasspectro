@@ -1,5 +1,5 @@
 function tapers=reassignment_get_tapers(taps,N)
-% function to generate tapers from given parameters or check provided tapers.
+% Function to generate tapers from given parameters or check provided tapers.
 %
 % INPUT:
 % taps : (1) two element vector [NW K], where NW is time half-bandwidth and K is

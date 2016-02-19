@@ -14,7 +14,7 @@ function S = reassignment_get_stft(sig,win,ovlap,nfft)
 % the window. The returned STFT matrix is not normalized.
 %
 %
-% (C) Mariia Fedotenkoava 2015.
+% (C) Mariia Fedotenkoava 2016.
 
 
 

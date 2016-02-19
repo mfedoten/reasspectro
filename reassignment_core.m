@@ -1,5 +1,5 @@
 function [RS,fnew,tnew,S,forig,torig] = reassignment_core(sig,win,ovlap,nfft,fs,opts)
-% This functions actually does the main job in spectrogram reassignment:
+% This functions does actually the main job in spectrogram reassignment:
 % - creates additional windows;
 % - computes three STFTs;
 % - does the reassignment;

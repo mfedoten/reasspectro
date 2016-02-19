@@ -1,6 +1,17 @@
 function x_padded = reassignment_pad_signal(x,Nw,type)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+% A function to pad signal from left and right sides.
+%
+% INPUT:
+% x    : original singal;
+% Nw   : analysis window length;
+% type : type of padding, possible values are:
+%        'zeros','const','periodic','symmetric'.
+%
+% OUTPUT:
+% x_paddede : padded signal. The length of the output's signal is now:
+%             length(x)+Nw-1
+%
+% (C) Mariia Fedotenkoava 2016.
 
 % determine if signal is a row vector, if so turn into column
 if isrow(x)
