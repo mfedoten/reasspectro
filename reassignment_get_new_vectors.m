@@ -2,29 +2,29 @@ function [varargout] = reassignment_get_new_vectors(fhat,that,forig,torig,S,opt)
 % This function creates new frequency and time vectors. It transforms time
 % and  frequency vectors returned by reassignment method according to the
 % new spacing.
-% If last input is not specified, the function rounds the output from 
+% If last input is not specified, the function rounds the output from
 % reassignment procedure to the closest value in original vectors.
 % If new spacing is specified, the function creates vectors of new time and
 % frequency indices, but with higher sampling.
-% 
+%
 % Reassignment procedure returns vectors of time (in seconds) and
 % frequencies (in Hz), which specify "real" position of each point in
 % spectrogram. This function first creates the output vectors of time and
 % frequencies with desired sampling It also takes care that frequencies
 % higher than Fmax and lower than 0 will be wrapped and time larger than
-% Tmax and smaller than 0 will be truncated. Then it creates vectors of 
+% Tmax and smaller than 0 will be truncated. Then it creates vectors of
 % corresponding integer indices. The last steps is to map output vectors
 % from reassignment to newly created vectors.
 % NOTE: if you input higher sampling, time vector limits will change to
 % [0 tend]
-% 
+%
 % INPUT:  fhat, that   - output times and frequencies from reassignment;
 %         forig, torig - original times and frequencies;
 %         fs           - sampling rate;
 %         Inputs required only if new spacing is desired:
 %         tend/tshift  - a scalar; if new spasing is not required it's a
-%                        time shift of time vector, equal to half of the 
-%                        window; if new spacing is required it is a 
+%                        time shift of time vector, equal to half of the
+%                        window; if new spacing is required it is a
 %                        finishing time in seconds;
 %         new_spacing  - a two-element vector defining new spacing, first
 %                        element for frequency, second - for time.
@@ -34,7 +34,7 @@ function [varargout] = reassignment_get_new_vectors(fhat,that,forig,torig,S,opt)
 % OUTPUT: Fhat, That - new indices for reassignment;
 %         fnew,tnew  - new times and frequencies (optional);
 %
-% 
+%
 % (C) Mariia Fedotenkova 2016.
 
 if ~opt.new_sampling
@@ -58,7 +58,7 @@ else
     tnew = torig(1):dt:torig(end);
 end
 
-% make sure that spectrogram values (S) at frequencies outside [0 Fend] and 
+% make sure that spectrogram values (S) at frequencies outside [0 Fend] and
 % times outside [t1 tend] are not reassigned, they are set to zero
 idx = find(fhat<0 | fhat>fnew(end) | that<tnew(1) | that>tnew(end));
 fhat(idx) = 0;
