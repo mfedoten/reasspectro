@@ -18,15 +18,16 @@ There is one additional parameter for multitaper method: `mean`, which defines w
 
 
 # Syntax
-Conventional spectrogram:
-```RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)```
-
-Multitapers spectrogram:
-    RS = REASMULTITAPERS(SIG,NSEQ,TAPERS,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
-    RS = REASSPECGRAM(...,PROPERTYSTRUCTURE)
-    [RS,S] = REASSPECGRAM(...)
-    [RS,FNEW,TNEW] = REASSPECGRAM(...)
-    [RS,FNEW,TNEW,S,FORIG,TORIG] = REASSPECGRAM(...)
+Conventional spectrogram:    
+```RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)```   
+Multitapers spectrogram:   
+```matlab
+RS = REASMULTITAPERS(SIG,NSEQ,TAPERS,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
+RS = REASSPECGRAM(...,PROPERTYSTRUCTURE)
+[RS,S] = REASSPECGRAM(...)
+[RS,FNEW,TNEW] = REASSPECGRAM(...)
+[RS,FNEW,TNEW,S,FORIG,TORIG] = REASSPECGRAM(...)
+```
 
 |Inputs |                   |
 |-------|-------------------|
