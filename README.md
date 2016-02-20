@@ -1,6 +1,6 @@
 # Spectrogram reassignment
 
-This function computes reassigned version of the conventional and multitaper spectrograms. The algorithm is based on Auger and Flandrin method [^1], some parts are adopted from Fulop & Fitz [^2]. The idea is to first compute conventional spectrogram, then find optimal (in a sense of energy) time and frequency positions and reassigns values in the spectrogram to this new positions. The difference between conventional and multitaper spectrograms is that multitaper method computes additional spectrogram with each taper. Taper is a generic term for a window function but in this method tapers refer to Slepian sequences [^4]. As a result, generally multitaper spectrogram reveals less variance than conventional one.
+This function computes reassigned version of the conventional and multitaper spectrograms. The algorithm is based on Auger and Flandrin method (see [1]), some parts are adopted from Fulop & Fitz (see [2]). The idea is to first compute conventional spectrogram, then find optimal (in a sense of energy) time and frequency positions and reassigns values in the spectrogram to this new positions. The difference between conventional and multitaper spectrograms is that multitaper method computes additional spectrogram with each taper. Taper is a generic term for a window function but in this method tapers refer to Slepian sequences (see [4]). As a result, generally multitaper spectrogram reveals less variance than conventional one.
 
 Choice of tapers plays important role in the result. Two important parameters here are time-halfbandwidth product NW and number of tapers K. NW represents the trade-off between better localisation and less variance: the higher NW the less variance is in the resulting time-frequency representation, but the resolution is decreasing and vice versa. As a rule of thumb, number of tapers is chosen as K = 2NW-1.
 
@@ -14,15 +14,15 @@ Sometimes, extreme values (outliers) appear on a spectrogram (reassigned and ori
 
 It is possible to obtain spectrogram on finer grid with this method. For that, you have to specify in the properties three additional parameters: new steps or new dimensions of time and frequency, specify if it is new steps or dimensions. Usage of this feature is not recommended, because even though it is possible to increase number of points in the output matrix the original number of points is not changing. So, you might obtain very sparse matrix. To partially solve it you can use interpolation (set `interp` parameter), which interpolates additional points with values of its neighbouring points. A use of this feature is also not advised, because it decreases the sharpness of reassigned spectrogram and contradicts the whole idea of the reassignment.
 
-There is one additional parameter for multitaper method: `mean`, which defines which method to use when averaging several spectrograms obtained with different tapers into one single distribution. Possible options are: standard mean function ('mean'), geometric mean ('geom') ,by choosing the minimal value along all the spectrograms ('min') or using median ('median'). For more information on different averaging methods see Xiao & Flandrin [^3].
+There is one additional parameter for multitaper method: `mean`, which defines which method to use when averaging several spectrograms obtained with different tapers into one single distribution. Possible options are: standard mean function ('mean'), geometric mean ('geom') ,by choosing the minimal value along all the spectrograms ('min') or using median ('median'). For more information on different averaging methods see Xiao & Flandrin (see [3]).
 
 
 # Syntax
 Conventional spectrogram:    
 ```RS = REASSPECGRAM(SIG,WIN,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)```   
 Multitapers spectrogram:   
+```RS = REASMULTITAPERS(SIG,NSEQ,TAPERS,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)```   
 ```matlab
-RS = REASMULTITAPERS(SIG,NSEQ,TAPERS,OVLAP,NFFT,FS,'PROPERTYNAME',PROPERTYVALUE)
 RS = REASSPECGRAM(...,PROPERTYSTRUCTURE)
 [RS,S] = REASSPECGRAM(...)
 [RS,FNEW,TNEW] = REASSPECGRAM(...)
@@ -99,7 +99,7 @@ title('Reassigned spectrogram','FontSize',16);
 
 
 ## References
-[^1]: Auger, F. et al. Time-Frequency Reassignment and Synchrosqueezing: An Overview. IEEE Signal Processing Magazine 30, 32–41 (2013).
-[^2]: Fulop, S. A. & Fitz, K. Algorithms for computing the time-corrected instantaneous frequency (reassigned) spectrogram, with applications. The Journal of the Acoustical Society of America 119, 360 (2006).
-[^3]: Xiao, J. & Flandrin, P. Multitaper Time-Frequency Reassignment for Nonstationary Spectrum Estimation and Chirp Enhancement. IEEE Transactions on Signal Processing 55, 2851–2860 (2007).
-[^4]: Mitra, P. & Bokil, H. Observed Brain Dynamics. (Oxford University Press, 2007).
+1. Auger, F. et al. Time-Frequency Reassignment and Synchrosqueezing: An Overview. IEEE Signal Processing Magazine 30, 32–41 (2013).
+2. Fulop, S. A. & Fitz, K. Algorithms for computing the time-corrected instantaneous frequency (reassigned) spectrogram, with applications. The Journal of the Acoustical Society of America 119, 360 (2006).
+3. Xiao, J. & Flandrin, P. Multitaper Time-Frequency Reassignment for Nonstationary Spectrum Estimation and Chirp Enhancement. IEEE Transactions on Signal Processing 55, 2851–2860 (2007).
+4. Mitra, P. & Bokil, H. Observed Brain Dynamics. (Oxford University Press, 2007).
