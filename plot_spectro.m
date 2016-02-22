@@ -6,33 +6,24 @@ function plot_spectro(t,f,S,varargin)
 % f : frequency;
 % S : spectrogram matrix;
 %
-% OPTIONS (as structure)
-% Nw    : length of the window (used to plot COI);
-% tReal : original time (used to plot COI);
-% type  : type of plots: 'image', 'contour', 'pcolor'
-% ncont : number of countour levels, if contour is chosen as display method
-% flim  : max. frequency to be displayed;
-% font  : size of the ticks font;
-% hax   : handle to axes, where you want to plot it, otherwise creates new
-%         figure
-% colmap: colormap
+% OPTIONS (as structure or name-value pair)
+% Nw     : length of the window; used to plot COI (if not provided COI is not 
+%          plotted);
+% tReal  : original time; used to plot COI (if not provided COI is not plotted);
+% type   : type of plots: 'image', 'contour', 'pcolor', default is 'image';
+% ncont  : number of countour levels (if contour is chosen as display method),
+%          if not provided, nr. of contours is chosen automatically;
+% flim   : max. frequency to be displayed;
+% font   : ticks font size, axes font is computed automatically as font+2;
+% hax    : handle to axes, where you want to plot it, otherwise creates new
+%          figure;
+% colmap : colormap.
 
 % get options into structure
 opts = struct(varargin{:});
 
-% get default font
-fs_default = get(0,'DefaultAxesFontSize');
-% set font sizes
-if isfield(opts,'font')
-    % smallest font is for axes
-    set(0,'DefaultAxesFontSize',font_size);
-end
-fs_ticks  = get(0,'DefaultAxesFontSize');
-fs_labels = fs_ticks + 4;
-
-
 % use provided figure, if asked
-if isfield(opts,'hax')
+if isfield(opts,'hax') && ~isempty(opt.hax)
     ha = opts.hax;
 else
     figure('Units','Centimeters');
@@ -43,6 +34,16 @@ else
     ha = axes('Units','Centimeters','Position',[0.1*fpos(3:4) 0.8*fpos(3:4)]);
 end
 set(gcf,'Render','painters');
+
+% set font sizes
+if isfield(opts,'font') && ~isempty(opts.font)
+    % smallest font is for axes ticks
+    fs_ticks = opts.font;
+    set(ha,'FontSize',fs_ticks);
+else
+    fs_ticks = get(ha,'FontSize');
+end
+fs_labels = fs_ticks + 2;
 
 % chose plotting method
 if ~isfield(opts,'type') || ~any(strcmpi(opts.type,{'image','contour','pcolor'}))
@@ -55,10 +56,10 @@ switch opts.type
         imagesc(t,f,S);
         axis xy;
     case 'contour'
-        if isfield(opts,'ncont')
+        if isfield(opts,'ncont') && ~isempty(opts.ncount)
             contourf(t,f,S,opts.ncont,'EdgeColor','None');
         else
-            contourf(t,f,S,opts.ncont,'EdgeColor','None');
+            contourf(t,f,S,'EdgeColor','None');
         end
     case 'pcolor'
         pcolor(t,f,S); 
@@ -66,18 +67,18 @@ switch opts.type
 end
 
 % plot until max freq. if specified
-if isfield(opts,'flim')
+if isfield(opts,'flim') && ~isempty(opts.flim)
     ylim([f(1) opts.flim]);
 end
 
 % set desired colormap
-if isfield(opts,'colmap')
+if isfield(opts,'colmap') && ~isempty(opts.colmap)
     colormap(opts.colmap);
 end
 
 % anotate the plots
-ylabel('Frequency', 'FontSize', fs_labels);
-xlabel('Time', 'FontSize', fs_labels);
+ylabel('Frequency (Hz)', 'FontSize', fs_labels);
+xlabel('Time (s)', 'FontSize', fs_labels);
 
 % Colorbar
 pos = get(gca,'Position');
@@ -104,8 +105,6 @@ if isfield(opts,'Nw') && isfield(opts,'tReal')
     end
 end
 
-% set default font size back
-set(0,'DefaultAxesFontSize',fs_default);
 end
 
 
@@ -114,11 +113,11 @@ axes(hAx);
 hold on;
 % add ones due to imagesc properties
 hPatch = patch(tReal(1) + [-1 Nw/2/fs Nw/2/fs -1],...
-    [-5 -5 fmax+1 fmax+1], minLvl);
+    [-1 -1 fmax+1 fmax+1], minLvl);
 hatchfill(hPatch, 'cross', 45, 10, cc);
 plot([Nw/2/fs Nw/2/fs],[-1 fmax+1],cc,'linewidth',1.5);
 hPatch = patch(tReal(end) - [-1 Nw/2/fs Nw/2/fs -1],...
-    [-5 -5 fmax+1 fmax+1], minLvl);
+    [-1 -1 fmax+1 fmax+1], minLvl);
 hatchfill(hPatch, 'cross', 45, 10, cc);
 plot(tReal(end)-[Nw/2/fs Nw/2/fs],[-1 fmax+1],cc,'linewidth',1.5);
 end
