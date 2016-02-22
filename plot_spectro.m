@@ -17,13 +17,59 @@ function plot_spectro(t,f,S,varargin)
 % font   : ticks font size, axes font is computed automatically as font+2;
 % hax    : handle to axes, where you want to plot it, otherwise creates new
 %          figure;
+% dbFreq : plot frequency in dB (skips f=0Hz);
+% dbPow  : plot Power in dB (assign eps to zero values);
 % colmap : colormap.
+% 
+% Note: if you want to plot frequency in dBs, you shouldn't use 'image' plot
+% type, use 'contour' or 'pcolor' instead.
+%
+% (C) Mariia Fedotenkova 2016.
+
 
 % get options into structure
 opts = struct(varargin{:});
 
+% check frequency for inf values
+if ~all(isfinite(f))
+    error('Frequency vector contains Inf values');
+end
+
+% transform frequencies to dB
+if isfield(opts,'dbFreq') && ~isempty(opts.dbFreq)
+    S(f==0,:) = [];
+    f(f==0) = [];
+    f = 10*log10(f);
+elseif sum(diff(diff(f))) > eps
+    opts.dbFreq = true;    
+else
+    opts.dbFreq = false;
+end
+
+% transform power to dB
+if isfield(opts,'dbPow') && ~isempty(opts.dbFreq) 
+    S(S==0) = eps;
+    S = 10*log10(S);
+end
+
+% chose plotting method
+if ~isfield(opts,'type') || isempty(opts.type) || ~any(strcmpi(opts.type,...
+        {'image','contour','pcolor'}))
+    % set default plotting method
+    if opts.dbFreq
+        opts.type = 'pcolor';
+    else
+        opts.type = 'image';
+    end
+    % if non-linear frequencise + image -> switch to pcolor
+elseif opts.dbFreq && all(strcmpi(opts.type,'image'))
+    warning(['Image will not give good results with non-linear frequencies.',...
+        ' Switching to pcolor']);
+    opts.type = 'pcolor';
+end
+
 % use provided figure, if asked
-if isfield(opts,'hax') && ~isempty(opt.hax)
+if isfield(opts,'hax') && ~isempty(opts.hax)
     ha = opts.hax;
 else
     figure('Units','Centimeters');
@@ -34,21 +80,6 @@ else
     ha = axes('Units','Centimeters','Position',[0.1*fpos(3:4) 0.8*fpos(3:4)]);
 end
 set(gcf,'Render','painters');
-
-% set font sizes
-if isfield(opts,'font') && ~isempty(opts.font)
-    % smallest font is for axes ticks
-    fs_ticks = opts.font;
-    set(ha,'FontSize',fs_ticks);
-else
-    fs_ticks = get(ha,'FontSize');
-end
-fs_labels = fs_ticks + 2;
-
-% chose plotting method
-if ~isfield(opts,'type') || ~any(strcmpi(opts.type,{'image','contour','pcolor'}))
-    opts.type = 'image';
-end
 
 axes(ha);
 switch opts.type
@@ -66,7 +97,7 @@ switch opts.type
         shading flat;
 end
 
-% plot until max freq. if specified
+% plot until max freq., if specified
 if isfield(opts,'flim') && ~isempty(opts.flim)
     ylim([f(1) opts.flim]);
 end
@@ -75,6 +106,16 @@ end
 if isfield(opts,'colmap') && ~isempty(opts.colmap)
     colormap(opts.colmap);
 end
+
+% change font sizes
+if isfield(opts,'font') && ~isempty(opts.font)
+    % smallest font is for axes ticks
+    fs_ticks = opts.font;
+    set(ha,'FontSize',fs_ticks);
+else
+    fs_ticks = get(ha,'FontSize');
+end
+fs_labels = fs_ticks + 2;
 
 % anotate the plots
 ylabel('Frequency (Hz)', 'FontSize', fs_labels);
