@@ -13,7 +13,9 @@ function plot_spectro(t,f,S,varargin)
 % type   : type of plots: 'image', 'contour', 'pcolor', default is 'image';
 % ncont  : number of countour levels (if contour is chosen as display method),
 %          if not provided, nr. of contours is chosen automatically;
-% flim   : max. frequency to be displayed;
+% flim   : frequency limits, given as two-element vctor: [fmin fmax] OR as a
+%          scalar value: fmax. If you chose to plot frequency axis in dBs you
+%          should provide limits in dBs as well;
 % font   : ticks font size, axes font is computed automatically as font+2;
 % hax    : handle to axes, where you want to plot it, otherwise creates new
 %          figure;
@@ -36,18 +38,18 @@ if ~all(isfinite(f))
 end
 
 % transform frequencies to dB
-if isfield(opts,'dbFreq') && ~isempty(opts.dbFreq)
+if isfield(opts,'dbFreq') && ~isempty(opts.dbFreq) && opts.dbFreq
     S(f==0,:) = [];
     f(f==0) = [];
     f = 10*log10(f);
-elseif sum(diff(diff(f))) > eps
+elseif abs(sum(diff(diff(f)))) > eps
     opts.dbFreq = true;    
 else
     opts.dbFreq = false;
 end
 
 % transform power to dB
-if isfield(opts,'dbPow') && ~isempty(opts.dbFreq) 
+if isfield(opts,'dbPow') && ~isempty(opts.dbPow) && opts.dbPow
     S(S==0) = eps;
     S = 10*log10(S);
 end
@@ -67,6 +69,7 @@ elseif opts.dbFreq && all(strcmpi(opts.type,'image'))
         ' Switching to pcolor']);
     opts.type = 'pcolor';
 end
+opts.type
 
 % use provided figure, if asked
 if isfield(opts,'hax') && ~isempty(opts.hax)
@@ -76,35 +79,39 @@ else
     fpos = get(gcf,'Position');
     fpos = [0.6*fpos(1:2) 1.2*fpos(3) 1.2*fpos(3)];
     set(gcf,'Position',fpos);
-    
     ha = axes('Units','Centimeters','Position',[0.1*fpos(3:4) 0.8*fpos(3:4)]);
 end
-set(gcf,'Render','painters');
 
-axes(ha);
 switch opts.type
     case 'image'
-        imagesc(t,f,S);
+        set(gcf,'Render','painters');
+        imagesc(t,f,S,'Parent',ha);
         axis xy;
     case 'contour'
         if isfield(opts,'ncont') && ~isempty(opts.ncount)
-            contourf(t,f,S,opts.ncont,'EdgeColor','None');
+            contourf(ha,t,f,S,opts.ncont,'EdgeColor','None');
         else
-            contourf(t,f,S,'EdgeColor','None');
+            contourf(ha,t,f,S,'EdgeColor','None');
         end
     case 'pcolor'
-        pcolor(t,f,S); 
+        pcolor(ha,t,f,S); 
         shading flat;
 end
 
-% plot until max freq., if specified
+% set Y-limits; plot until max freq., if specified
 if isfield(opts,'flim') && ~isempty(opts.flim)
-    ylim([f(1) opts.flim]);
+    if isscalar(opts.flim)
+        ylim([f(1) opts.flim]);
+    elseif length(opts.flim)==2
+        ylim([opts.flim(1) opts.flim(2)]);
+    end
+else
+    ylim([f(1) f(end)]);
 end
 
 % set desired colormap
 if isfield(opts,'colmap') && ~isempty(opts.colmap)
-    colormap(opts.colmap);
+    colormap(ha,opts.colmap);
 end
 
 % change font sizes
@@ -123,16 +130,15 @@ xlabel('Time (s)', 'FontSize', fs_labels);
 
 % Colorbar
 pos = get(gca,'Position');
-cb = colorbar; pause(0.5);
+cb = colorbar; pause(0.1);
 if verLessThan('matlab','8.4')
-    set(cb, 'TickLength', [0 0], 'FontSize', 11);
+    set(cb, 'TickLength', [0 0], 'FontSize', fs_ticks);
     poscb = get(cb, 'Position');
     set(cb, 'Position', [poscb(1)+poscb(3) poscb(2) poscb(3) poscb(4)]);
 else
-    set(cb, 'TickLength', 0, 'FontSize', 12, 'Box', 'off');
+    set(cb, 'TickLength', 0, 'FontSize', fs_ticks, 'Box', 'off');
     cb.Ruler.Axle.Visible = 'off';
     cb.Ruler.SecondaryLabel.HorizontalAlignment = 'left';
-    cb.FontSize = fs_ticks;
 end
 set(gca,'Position',pos);
 
@@ -142,25 +148,25 @@ if isfield(opts,'Nw') && isfield(opts,'tReal')
     % color to plot COI
     ccoi = 'w';
     if opts.Nw/2/fs > t(1)
-        disp_coi(gca,opts.tReal,opts.Nw,fs,fs/2,ccoi,min(S(:)));
+        disp_coi(gca,opts.tReal,opts.Nw,fs,[f(1) f(end)],ccoi,min(S(:)));
     end
 end
 
 end
 
 
-function disp_coi(hAx,tReal,Nw,fs,fmax,cc,minLvl)
+function disp_coi(hAx,tReal,Nw,fs,flim,cc,minLvl)
 axes(hAx);
 hold on;
 % add ones due to imagesc properties
-hPatch = patch(tReal(1) + [-1 Nw/2/fs Nw/2/fs -1],...
-    [-1 -1 fmax+1 fmax+1], minLvl);
+hPatch = patch(tReal(1) + [0 Nw/2/fs Nw/2/fs 0],...
+    [flim(1) flim(1) flim(2) flim(2)], minLvl);
 hatchfill(hPatch, 'cross', 45, 10, cc);
-plot([Nw/2/fs Nw/2/fs],[-1 fmax+1],cc,'linewidth',1.5);
-hPatch = patch(tReal(end) - [-1 Nw/2/fs Nw/2/fs -1],...
-    [-1 -1 fmax+1 fmax+1], minLvl);
+plot([Nw/2/fs Nw/2/fs],flim,cc,'linewidth',1.5);
+hPatch = patch(tReal(end) - [0 Nw/2/fs Nw/2/fs 0],...
+    [flim(1) flim(1) flim(2) flim(2)], minLvl);
 hatchfill(hPatch, 'cross', 45, 10, cc);
-plot(tReal(end)-[Nw/2/fs Nw/2/fs],[-1 fmax+1],cc,'linewidth',1.5);
+plot(tReal(end)-[Nw/2/fs Nw/2/fs],flim,cc,'linewidth',1.5);
 end
 
 
