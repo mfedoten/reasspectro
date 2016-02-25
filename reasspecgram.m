@@ -21,7 +21,7 @@ function varargout = reasspecgram(varargin)
 % NFFT  - number of Fourier transform points. If no input is provided, the
 %         default value is chosen as next power of 2 greater then the length of
 %         the window.
-% FS    - sampling frequency in Hz.
+% FS    - sampling frequency in Hz. Default is FS = 1.
 %
 % PROPERTIES:
 % By default all properties are unset. Property can be passed as name-value pair
@@ -104,7 +104,9 @@ function varargout = reasspecgram(varargin)
 % instantaneous frequency (reassigned) spectrogram, with applications. The
 % Journal of the Acoustical Society of America 119, 360 (2006).
 %
-% Copyright Mariia Fedotenkova, 2015, INRIA Nancy.
+% See also: reasmultitapers.m
+%
+% Copyright Mariia Fedotenkova, 2016, INRIA Nancy.
 % Licensed for use under GNU General Public License, Version 2.  See LICENSE for
 % details.
 
@@ -113,104 +115,20 @@ function varargout = reasspecgram(varargin)
 narginchk(1,15);
 nargoutchk(1,6);
 % distribute inputs
-[sig,win,Nw,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
-opts = check_opts(opts);
-
-
-% make sure window is a column vector
-win = win(:);
-% construct additional windows for reassignment
-[Twin,Dwin] = reassignment_get_windows(win,fs);
-
+[sig,win,ovlap,nfft,fs,opts]=parse_inpts(varargin{:});
+opts = reassignment_check_opts('spec',opts);
 
 % pad signal with half of the window on both sides in order to avoid edge
 % effects and to have time starting from zero, not half of the window
 if opts.pad
-    sig = reassignment_pad_signal(sig,Nw,opts.pad);
+    sig = reassignment_pad_signal(sig,length(win),opts.pad);
 end
 
+% make sure window is a column vector
+win = win(:);
 
-% compute three STFTs
-Sw = reassignment_get_stft(sig,win,ovlap,nfft);
-Stw = reassignment_get_stft(sig,Twin,ovlap,nfft);
-Sdw = reassignment_get_stft(sig,Dwin,ovlap,nfft);
-
-
-% nr. of time points and frequency bins
-[frow,tcol] = size(Sw);
-
-
-% squared short-time Fourier transform
-S = abs(Sw).^2;
-% if the output is psd
-if opts.psd
-    % normalized spectrogram by window's energy
-    S = S/(win'*win);
-    % divide over sampling frequency to get PSD (Power/freq)
-    S = S/fs;
-end
-% if the signal is real, we take only half of the spectrogram, so we have
-% to multiply this half by two, except DC and Nyquist
-if frow ~= nfft
-    S = [S(1,:); 2*S(2:end-1,:); S(end,:)];
-end
-
-
-% original time and frequency vectors (indices)
-% MATLAB indexation drives me crazy, I start from zero here
-Forig = (0:frow-1)';
-Torig = (0:(tcol-1))*(Nw-ovlap);
-% original time and frequency vectors (seconds and Hz)
-% !don't take half of the window for now, it will be returned in the end
-forig = Forig*fs/nfft;
-torig = Torig/fs;
-
-
-% get new reassigned vectors of frequencies (in Hz) and times (in s)
-[fhat,that] = reassignment_get_displacements(Sw,Stw,Sdw,torig,forig);
-
-
-% create vectors of time and frequency with higher spacing or just by
-% rounding fhat,that to the closest bin in original vectors
-[Snew,Fhat,That,fnew,tnew] = reassignment_get_new_vectors(fhat,that,...
-        forig,torig,S,opts);
-
-
-% reassign spectrogram values to new locations
-% turn all matrices into column vectors
-That = That(:);
-Fhat = Fhat(:);
-Snew = Snew(:);
-sz = [length(fnew) length(tnew)];
-
-
-if opts.interp
-    RS = zeros(sz);
-    alpha = That - floor(That);
-    beta  = Fhat - floor(Fhat);
-    for k = 1:length(Snew)
-        RS(floor(Fhat(k)),floor(That(k))) = RS(floor(Fhat(k)),floor(That(k))) + ((1-alpha(k)) * (1-beta(k)) * Snew(k));
-        RS(ceil(Fhat(k)),floor(That(k)))  = RS(ceil(Fhat(k)),floor(That(k))) + ((1-alpha(k)) * (beta(k)) * Snew(k));
-        RS(floor(Fhat(k)),ceil(That(k)))  = RS(floor(Fhat(k)),ceil(That(k))) + ((alpha(k)) * (1-beta(k)) * Snew(k));
-        RS(ceil(Fhat(k)),ceil(That(k)))   = RS(ceil(Fhat(k)),ceil(That(k))) + ((alpha(k)) * (beta(k)) * Snew(k));
-    end
-else
-    RS = accumarray([round(Fhat) round(That)],Snew,sz);
-end
-
-
-% crop reassigned and conventional sectrograms to have only values below
-% specified percentile
-if opts.crop
-    RS = crop_matrix(RS,opts.crop);
-    S  = crop_matrix(S,opts.crop);
-end
-
-% add half of the window to time vector if no padding was used
-if ~opts.pad
-    torig = torig + floor(Nw/2)/fs;
-    tnew  = tnew  + floor(Nw/2)/fs;
-end
+% do the reassignment
+[RS,fnew,tnew,S,forig,torig] = reassignment_core(sig,win,ovlap,nfft,fs,opts);
 
 
 % ------------------------ distribute the outputs -------------------------
@@ -228,9 +146,8 @@ switch nargout
 end
 
 
-
 %--------------------------------------------------------------------------
-function [sig,win,Nw,ovlap,nfft,fs,opts]=parse_inpts(varargin)
+function [sig,win,ovlap,nfft,fs,opts]=parse_inpts(varargin)
 sig = varargin{1};
 N  = length(sig);
 % if window is not defined, use hamming window of length=N/10
@@ -266,14 +183,13 @@ else
         warning('NFFT is more than signal length. Using signal length instead.');
     end
 end
-% if no sampling rate provided use length of the signal by default -> the
-% tend = 1s.
+% if no sampling rate provided use fs = 1.
 if nargin < 5 || isempty(varargin{5})
-    fs = N;
+    fs = 1;
     opts = struct;
 elseif nargin >= 5
     fs = varargin{5};
-    if fs < 0 || ~isscalar(fs)
+    if ~isscalar(fs) || fs < 0
         error('Sampling rate should be positive scalar');
     end
     % the rest (if any) are options for new spacing, turn it into structure
@@ -287,98 +203,4 @@ elseif nargin >= 5
         opts = struct;
     end
 end
-
-
 %--------------------------------------------------------------------------
-function opts = check_opts(opts)
-% first check that all the fields are valid
-val_flds = {'new_sampling','step','size','interp','psd','crop','pad'};
-opt_flds = fieldnames(opts);
-not_valid = opt_flds(~ismember(opt_flds,val_flds));
-if ~isempty(not_valid)
-    error('"%s" not a valid property.\n', not_valid{:});
-end
-
-% check step/size property (if any)
-if isfield(opts,'size') && isfield(opts,'step')
-    % we should chose only one way to specify output matrix size
-    error('"size" and "step" properties are mutually exclusive, you should chose only one.');
-elseif isfield(opts,'size')
-   % check the 'size' property
-   if any(size(opts.size)~=[1 2]) && any(size(opts.size)~=[2 1])
-       % 'size' should be two-element vector
-       error('New size should be a two-element vector.')
-   end
-   if any(~isfinite(opts.size)) || ~isreal(opts.size) || ischar(opts.size)
-       % it also should be finite and real
-       error('Size should contain only real finite values');
-   end
-   opts.new_sampling = true;
-elseif isfield(opts,'step')
-   % the same goes for 'step'
-   if any(size(opts.step)~=[1 2]) && any(size(opts.step)~=[2 1])
-       error('New sampling step should be a two-element vector.')
-   end
-   if any(~isfinite(opts.step)) || ~isreal(opts.step) || ischar(opts.step)
-       error('Sampling step should contain only real finite values');
-   end
-   opts.new_sampling = true;
-elseif ~isfield(opts,'size') && ~isfield(opts,'step')
-   % if neither step or size are specified, then we don't want to change
-   % size of the output matrix
-   opts.new_sampling = false;
-end
-
-% check interpolation property (if any)
-if isfield(opts,'interp')
-    % if 'interp' property was set check that it meets all requirements
-    if isempty(opts.interp)||any(isnan(opts.interp))||all(~opts.interp)
-        % we don't want interpolation if it is false, empty or NaN
-        opts.interp = false;
-    else
-        % otherwise turn it to logical true
-        opts.interp = true;
-    end
-else
-    % if it wasn't passed, set it to false
-    opts.interp = false;
-end
-
-% check 'return PSD' property (if any)
-if isfield(opts,'psd')
-    if isempty(opts.psd)||any(isnan(opts.psd))||all(~opts.psd)
-        % we don't want PSD if it is false, empty or NaN
-        opts.psd = false;
-    else
-        % otherwise turn it to logical true
-        opts.psd = true;
-    end
-else
-    opts.psd = false;
-end
-
-% check crop property (if any)
-if isfield(opts,'crop')
-    if isempty(opts.crop)||~isscalar(opts.crop)
-        % we don't want to crop the matrix
-        opts.crop = false;
-    elseif opts.crop<0 || opts.crop>100
-        % percentile should be between 0 and 100%
-        error('Percentile should be specified as a number between 0 and 100%%.');
-    end
-else
-    opts.crop = false;
-end
-
-% check padding property (if any)
-if isfield(opts,'pad')
-    if isempty(opts.pad)
-        % we don't want any padding
-        opts.crop = false;
-    elseif ~ischar(opts.pad)
-        % should be a string
-        error('Specify padding type as a string');
-    end
-else
-    opts.pad = false;
-end

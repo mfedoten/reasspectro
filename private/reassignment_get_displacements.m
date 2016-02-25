@@ -1,5 +1,5 @@
 function [fhat,that] = reassignment_get_displacements(Sw,Stw,Sdw,torig,forig)
-% This function computes frequency and time displacement.
+% This function computes frequency and time displacements.
 %
 % INPUT:  Sw     - STFT with the original window;
 %         Stw    - STFT with the time window;
@@ -13,7 +13,7 @@ function [fhat,that] = reassignment_get_displacements(Sw,Stw,Sdw,torig,forig)
 %         That - the same as Fhat, but for time;
 %
 %
-% (C) Mariia Fedotenkova 2015.
+% (C) Mariia Fedotenkova 2016.
 
 
 % find where STFT is non-zero

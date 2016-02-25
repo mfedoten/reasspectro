@@ -7,7 +7,7 @@ function [twin,dwin] = reassignment_get_windows(window,fs)
 %         dwin = d(window(t))/dt - window time derivative
 %
 %
-% (C) Mariia Fedotenkova 2015. 
+% (C) Mariia Fedotenkova 2016. 
 
 
 % ---------------------------- arguments check ----------------------------

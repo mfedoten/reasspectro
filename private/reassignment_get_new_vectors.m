@@ -1,4 +1,4 @@
-function [varargout] = reassignment_get_new_vectors_tmp(fhat,that,forig,torig,S)
+function [varargout] = reassignment_get_new_vectors(fhat,that,forig,torig,S,opt)
 % This function creates new frequency and time vectors. It transforms time
 % and  frequency vectors returned by reassignment method according to the
 % new spacing.
@@ -35,15 +35,28 @@ function [varargout] = reassignment_get_new_vectors_tmp(fhat,that,forig,torig,S)
 %         fnew,tnew  - new times and frequencies (optional);
 %
 %
-% (C) Mariia Fedotenkova 2015.
+% (C) Mariia Fedotenkova 2016.
 
-
-% construct new time and frequency vectors
-fnew = forig;
-tnew = torig;
-% calculate time and frequency steps;
-df = forig(2) - forig(1);
-dt = torig(2) - torig(1);
+if ~opt.new_sampling
+    % construct new time and frequency vectors
+    fnew = forig;
+    tnew = torig;
+    % calculate time and frequency steps;
+    df = forig(2) - forig(1);
+    dt = torig(2) - torig(1);
+else
+    % get time and frequency steps
+    if isfield(opt,'step')
+        df = opt.step(1);
+        dt = opt.step(2);
+    elseif isfield(opt,'size')
+        df = (forig(end) - forig(1))/(opt.size(1)-1);
+        dt = (torig(end) - torig(1))/(opt.size(2)-1);
+    end
+    % construct new higher spaced vectors
+    fnew = (forig(1):df:forig(end))';
+    tnew = torig(1):dt:torig(end);
+end
 
 % make sure that spectrogram values (S) at frequencies outside [0 Fend] and
 % times outside [t1 tend] are not reassigned, they are set to zero
