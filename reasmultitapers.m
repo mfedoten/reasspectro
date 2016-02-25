@@ -59,7 +59,7 @@ function varargout = reasmultitapers(varargin)
 %            size/sampling, because it increases the number of points.
 %            Otherwise, it is not recommended to use it, because the idea of
 %            reassignment is lost like that.
-%'mean'    : Method of averaging spectrograms obtained with multitapers into one
+% 'mean'   : Method of averaging spectrograms obtained with multitapers into one
 %            time-frequency representation. The possible values are:
 %            'mean' (for arithmetic mean),'geom' (geometric mean),'min' (takes
 %            the min value among all spectrograms),'median' (uses median). For

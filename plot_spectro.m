@@ -42,7 +42,7 @@ if isfield(opts,'dbFreq') && ~isempty(opts.dbFreq) && opts.dbFreq
     S(f==0,:) = [];
     f(f==0) = [];
     f = 10*log10(f);
-elseif abs(sum(diff(diff(f)))) > eps
+elseif abs(mean(diff(diff(f)))) > eps
     opts.dbFreq = true;    
 else
     opts.dbFreq = false;
@@ -69,7 +69,6 @@ elseif opts.dbFreq && all(strcmpi(opts.type,'image'))
         ' Switching to pcolor']);
     opts.type = 'pcolor';
 end
-opts.type
 
 % use provided figure, if asked
 if isfield(opts,'hax') && ~isempty(opts.hax)
@@ -82,6 +81,7 @@ else
     ha = axes('Units','Centimeters','Position',[0.1*fpos(3:4) 0.8*fpos(3:4)]);
 end
 
+axes(ha);
 switch opts.type
     case 'image'
         set(gcf,'Render','painters');
@@ -125,12 +125,16 @@ end
 fs_labels = fs_ticks + 2;
 
 % anotate the plots
-ylabel('Frequency (Hz)', 'FontSize', fs_labels);
+if opts.dbFreq
+    ylabel('Frequency (dB)', 'FontSize', fs_labels);
+else
+    ylabel('Frequency (Hz)', 'FontSize', fs_labels);
+end
 xlabel('Time (s)', 'FontSize', fs_labels);
 
 % Colorbar
 pos = get(gca,'Position');
-cb = colorbar; pause(0.1);
+cb = colorbar; pause(0.05);
 if verLessThan('matlab','8.4')
     set(cb, 'TickLength', [0 0], 'FontSize', fs_ticks);
     poscb = get(cb, 'Position');
@@ -154,7 +158,7 @@ end
 
 end
 
-
+%-------------------------------------------------------------------------------
 function disp_coi(hAx,tReal,Nw,fs,flim,cc,minLvl)
 axes(hAx);
 hold on;
