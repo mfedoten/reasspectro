@@ -164,11 +164,11 @@ axes(hAx);
 hold on;
 % add ones due to imagesc properties
 hPatch = patch(tReal(1) + [0 Nw/2/fs Nw/2/fs 0],...
-    [flim(1) flim(1) flim(2) flim(2)], minLvl);
+    [flim(1) flim(1) flim(2) flim(2)], minLvl,'EdgeColor','none');
 hatchfill(hPatch, 'cross', 45, 10, cc);
 plot([Nw/2/fs Nw/2/fs],flim,cc,'linewidth',1.5);
 hPatch = patch(tReal(end) - [0 Nw/2/fs Nw/2/fs 0],...
-    [flim(1) flim(1) flim(2) flim(2)], minLvl);
+    [flim(1) flim(1) flim(2) flim(2)], minLvl,'EdgeColor','none');
 hatchfill(hPatch, 'cross', 45, 10, cc);
 plot(tReal(end)-[Nw/2/fs Nw/2/fs],flim,cc,'linewidth',1.5);
 end
