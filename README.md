@@ -63,39 +63,74 @@ or as a structure. If field requires logical true/false input, every non-empty,
 finite and not 'NaN' input is treated as logical true, e.g. true, 'yes', 1
 etc. will be validated as logical true.
 
+I also provide a function to display the spectrogram `plot_spectro`. Default plot is done just by running the function with default inputs (time, frequency, TFR-matrix). You can provide additional parameters to the function as name-value pair of as a structure to modify the plots, e.g. change colormap, plot frequencies or power in dB, increase font size of the axes, etc. For more information `help plot_spectro` and see example code below.
+
 ## Example
-Full script with examples on different functionality is in the 'examples' folder.
+This code can be found as a script in 'example' folder.
 
 ```matlab
+% to get the same results
+rng('default');
+
+% construct a test signal
 N  = 1024;          % number of points
-T  = 1;             % total time
+T  = 3;             % total time
 fs = N/T;           % sampling rate
 dt = 1/fs;          % sampling step
 t  = 0:dt:T-dt;     % time vector
 x  = chirp(t,0.1*fs,t(end),0.4*fs,'quadratic')';
-x  = x + 0.2*randn(size(x));
+x  = x + 0.5*randn(size(x));
 
-% parameters of spectrogram
-df    = 10;                    % frequency resolution
-Nw    = floor(fs/df);           % window length
-win   = hamming(Nw);            % window function
-ovlap = floor(.9*Nw);           % number of overlapping points
-nfft  = 2^nextpow2(Nw);         % number of FT points
+% spectral parameters
+df    = 5;                    % desired frequency resolution
+Nw    = floor(fs/df);         % window/slepian sequences length
+ovlap  = floor(0.9*Nw);       % overlap between adjacent windows
+nfft  = 2^nextpow2(Nw);       % number of FT points
+win    = gausswin(Nw,2.5);    % window for spectrogram
+tapers = [3.5, 6];            % tapers for multitaper NW = 3.5; K = 6
 
-%% defaults
-[RS,f_reas,t_reas,S,f_sp,t_sp] = reasspecgram(x,win,ovlap,nfft,fs);
+% set additional parameters:
+% - return PSD estimate;
+% - padd with zeros on both sides of the signal;
+% - mean averaging of tapers;
+% - interpolate reassigned points for spectrogram (to cover the "holes").
+optsMulti = struct('psd',1,'pad','zeros','mean','mean');
+optsSpec  = struct('psd',1,'pad','zeros','interp',1);
+
+% time-freuqency representations
+[RSmulti, fRMulti, tRMulti, Smulti, fMulti, tMulti] = reasmultitapers(x,...
+    Nw,tapers,ovlap,nfft,fs,optsMulti);
+[RSpec, fRSpec, tRSpec, Spec, fSpec, tSpec] = reasspecgram(x,...
+    win,ovlap,nfft,fs,optsSpec);
 
 % plot
-figure;
-h1 = subplot(121);
-h2 = subplot(122);
+figure; 
+hf = gcf;
+hf.Units = 'centimeters';
+hf.Position(3:4) = [2.5*hf.Position(3) 2*hf.Position(4)];
+ha1 = subplot(221); ha2 = subplot(222); ha3 = subplot(223); ha4 = subplot(224); 
+set([ha1,ha2,ha3,ha4],'Units','centimeters');
 
-plot_spectro(t_sp,f_sp,S,'tReal',t,'Nw',Nw,'hax',h1);
-title('Spectrogram','FontSize',16);
-plot_spectro(t_reas,f_reas,RS,'tReal',t,'Nw',Nw,'hax',h2);
-title('Reassigned spectrogram','FontSize',16);
+% plot non-linear power and linear frequencies using 'image' function, plot COI,
+% increase default font size and plot in each subplot
+optsPlot = struct('type','image','dbFreq',0,'dbPow',1,'Nw',Nw,'tReal',t,...
+    'font',12,'hax',ha1);
+plot_spectro(tSpec,fSpec,Spec,optsPlot);
+title('Conventional spectrogram','FontSize',15);
+
+optsPlot.hax = ha2;
+plot_spectro(tMulti,fMulti,Smulti,optsPlot);
+title('Multitapers spectrogram','FontSize',15);
+
+optsPlot.hax = ha3;
+plot_spectro(tSpec,fSpec,RSpec,optsPlot);
+title('Reassigned spectrogram','FontSize',15);
+
+optsPlot.hax = ha4;
+plot_spectro(tRMulti,fRMulti,RSmulti,optsPlot);
+title('Multitapers reassigned spectrogram','FontSize',15);
 ```
-![Example TFR](./examples/example_defaults.png)
+![Example TFR](./examples/example_plot.png)
 
 
 ## References
