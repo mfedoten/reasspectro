@@ -24,7 +24,7 @@ tapers = [3.5, 6];            % tapers for multitaper NW = 3.5; K = 6
 % - padd with zeros on both sides of the signal;
 % - mean averaging of tapers;
 % - interpolate reassigned points for spectrogram (to cover the "holes").
-optsMulti = struct('psd',1,'pad','zeros','mean','mean');
+optsMulti = struct('psd',1,'pad','zeros','mean','mean','interp',1);
 optsSpec  = struct('psd',1,'pad','zeros','interp',1);
 
 % time-freuqency representations
