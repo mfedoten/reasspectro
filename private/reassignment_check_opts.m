@@ -102,8 +102,8 @@ if strcmpi(flag,'tapers')
     end
 elseif strcmpi(flag,'spec')
     if isfield(opts,'mean') && ~isempty(opts.mean)
-        warning(['Averaging method is not applicable with spectrogram ',...
-            'reassignment. Ignoring.']);
+%         warning(['Averaging method is not applicable with spectrogram ',...
+%             'reassignment. Ignoring.']);
     end
 end
     
