@@ -84,7 +84,7 @@ end
 if isfield(opts,'pad')
     if isempty(opts.pad)
         % we don't want any padding
-        opts.crop = false;
+        opts.pad = false;
     elseif ~ischar(opts.pad)
         % should be a string
         error('Specify padding type as a string');
